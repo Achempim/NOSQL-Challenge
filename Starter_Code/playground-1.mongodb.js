@@ -24,20 +24,23 @@ db.getCollection('sales').insertMany([
   { 'item': 'abc', 'price': 10, 'quantity': 5, 'date': new Date('2016-02-06T20:20:13Z') },
 ]);
 
+//Running a find() query and counting the results
 // Run a find command to view items sold on April 4th, 2014.
-const salesOnApril4th = db.getCollection('sales').find({
+const salesOnApril4th = db.sales.find({
   date: { $gte: new Date('2014-04-04'), $lt: new Date('2014-04-05') }
-}).count();
+}).count();  // counts the number of matching documents
 
 // Print a message to the output window.
-console.log(`${salesOnApril4th} sales occurred in 2014.`);
+console.log(`${salesOnApril4th} sales occurred on April 4th, 2014.`);
 
 // Here we run an aggregation and open a cursor to the results.
 // Use '.toArray()' to exhaust the cursor to return the whole result set.
-// You can use '.hasNext()/.next()' to iterate through the cursor page by page.
-db.getCollection('sales').aggregate([
-  // Find all of the sales that occurred in 2014.
+// Aggregation: Group total sales by item for the year 2014.
+db.sales.aggregate([
+  // Match sales within the year 2014.
   { $match: { date: { $gte: new Date('2014-01-01'), $lt: new Date('2015-01-01') } } },
-  // Group the total sales for each product.
+  
+  // Group by item and calculate the total sales amount.
   { $group: { _id: '$item', totalSaleAmount: { $sum: { $multiply: [ '$price', '$quantity' ] } } } }
-]);
+]).toArray();  // Convert the result to an array and return the full result set
+
